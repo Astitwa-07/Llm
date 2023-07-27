@@ -1,1 +1,39 @@
 
+import os
+import fitz  # PyMuPDF
+import pytesseract
+from googletrans import Translator
+
+def pdf_to_text(pdf_file):
+    doc = fitz.open(pdf_file)
+    text = ""
+    for page_num in range(doc.page_count):
+        page = doc.load_page(page_num)
+        text += page.get_text()
+    doc.close()
+    return text
+
+# Rest of the functions remain the same as in the previous code snippet...
+
+def convert_pdf_to_english(input_folder, output_folder):
+    os.makedirs(output_folder, exist_ok=True)
+
+    for file_name in os.listdir(input_folder):
+        if file_name.lower().endswith('.pdf'):
+            input_file = os.path.join(input_folder, file_name)
+            pdf_text = pdf_to_text(input_file)
+
+            image_files = [file for file in os.listdir(input_folder) if file.lower().endswith(('.png', '.jpg', '.jpeg'))]
+            for image_file in image_files:
+                image_path = os.path.join(input_folder, image_file)
+                image_text = ocr_image_to_text(image_path)
+                pdf_text += image_text
+
+            translated_text = translate_text(pdf_text)
+            output_file = os.path.join(output_folder, file_name[:-4] + '_translated.pdf')
+            save_text_to_file(translated_text, output_file)
+
+if __name__ == "__main__":
+    input_folder_path = "/path/to/input/folder"
+    output_folder_path = "/path/to/output/folder"
+    convert_pdf_to_english(input_folder_path, output_folder_path)
