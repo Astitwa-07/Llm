@@ -57,3 +57,52 @@ if __name__ == "__main__":
     input_folder_path = "/path/to/input/folder"
     output_folder_path = "/path/to/output/folder"
     convert_pdf_to_english(input_folder_path, output_folder_path)
+
+
+
+
+import os
+import fitz  # PyMuPDF
+import pytesseract
+from googletrans import Translator
+from PyPDF2 import PdfWriter, PdfReader
+import uuid
+
+def extract_text_from_pdf(pdf_file):
+    with fitz.open(pdf_file) as doc:
+        text = ""
+        for page in doc:
+            text += page.get_text()
+    return text
+
+def extract_text_from_image(image_file):
+    image_text = pytesseract.image_to_string(image_file, lang='deu')
+    return image_text if image_text is not None else ""
+
+# Rest of the functions remain the same as in the previous code snippet...
+
+def convert_pdf_to_english(input_folder, output_folder):
+    os.makedirs(output_folder, exist_ok=True)
+
+    for file_name in os.listdir(input_folder):
+        if file_name.lower().endswith('.pdf'):
+            input_file = os.path.join(input_folder, file_name)
+            pdf_text = extract_text_from_pdf(input_file)
+
+            image_files = [file for file in os.listdir(input_folder) if file.lower().endswith(('.png', '.jpg', '.jpeg'))]
+            for image_file in image_files:
+                image_path = os.path.join(input_folder, image_file)
+                image_text = extract_text_from_image(image_path)
+                pdf_text += image_text
+
+            translated_text = translate_text(pdf_text)
+            cleaned_text = clean_text(translated_text)
+
+            output_file_name = str(uuid.uuid4()) + '_translated.pdf'
+            output_file = os.path.join(output_folder, output_file_name)
+            save_text_to_pdf(cleaned_text, output_file)
+
+if __name__ == "__main__":
+    input_folder_path = "/path/to/input/folder"
+    output_folder_path = "/path/to/output/folder"
+    convert_pdf_to_english(input_folder_path, output_folder_path)
