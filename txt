@@ -32,11 +32,15 @@ def convert_pdf_to_english(input_folder, output_folder):
             input_file = os.path.join(input_folder, file_name)
             pdf_text = extract_text_from_pdf(input_file)
 
-            translated_text = translate_text(pdf_text)
-            cleaned_text = clean_text(translated_text)
-
-            output_file = os.path.join(output_folder, file_name[:-4] + '_translated.pdf')
-            save_text_to_pdf(cleaned_text, output_file)
+            try:
+                translated_text = translate_text(pdf_text)
+            except:
+                translated_text = ""
+            
+            if translated_text.strip():  # Check if the translated text is not empty
+                cleaned_text = clean_text(translated_text)
+                output_file = os.path.join(output_folder, file_name[:-4] + '_translated.pdf')
+                save_text_to_pdf(cleaned_text, output_file)
 
 if __name__ == "__main__":
     input_folder_path = "/path/to/input/folder"
