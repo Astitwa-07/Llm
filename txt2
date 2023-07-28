@@ -1,0 +1,37 @@
+def extract_text_from_pdf(pdf_path):
+    text = ""
+    with pdfplumber.open(pdf_path) as pdf:
+        for page in pdf.pages:
+            text += page.extract_text()
+
+    return text
+def translate_text(text, target_lang='en'):
+    translator = Translator()
+    translated_text = translator.translate(text, dest=target_lang)
+    return translated_text.text
+def create_english_pdf(pdf_path, output_folder, english_text):
+    file_name = os.path.basename(pdf_path)
+    output_file_path = os.path.join(output_folder, "translated_" + file_name)
+    with pdfplumber.open(pdf_path) as pdf:
+        pdf_reader = PyPDF2.PdfReader(pdf_path)
+        pdf_writer = PyPDF2.PdfWriter()
+
+    for page_num in range(len(pdf.pages)):
+        page = pdf.pages[page_num]
+        pdf_writer.add_page(pdf_reader.getPage(page_num))
+        pdf_writer.update_page_form_fields(pdf_reader.getPage(page_num), {
+            "/Filter": "/FlateDecode"
+        })
+        pdf_writer.addBookmark("Translation", page_num)
+        page.extract_text = lambda: english_text.encode("latin1")
+
+    # Create a new PDF with the translated text
+    with open(output_file_path, "wb") as output_file:
+        pdf_writer.write(output_file)
+pdf_path = r'C:\Users\W1QDP7L\Downloads\11-Z-11-07343-013-800 We-Bu-PST-Verschleiss Bu-PL26_We-14971 (2).pdf'
+output_folder_path = r'C:\Users\W1QDP7L\Downloads\output'
+
+german_text = extract_text_from_pdf(pdf_path)
+english_text = translate_text(german_text)
+
+create_english_pdf(pdf_path, output_folder_path, english_text)
