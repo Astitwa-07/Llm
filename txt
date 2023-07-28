@@ -1,48 +1,4 @@
-import fitz  # PyMuPDF
-from googletrans import Translator
-
-def extract_text_from_pdf(pdf_path):
-    text = ""
-    pdf_document = fitz.open(pdf_path)
-    for page_num in range(pdf_document.page_count):
-        page = pdf_document.load_page(page_num)
-        text += page.get_text()
-
-    pdf_document.close()
-    return text
-
-def translate_german_to_english(german_text):
-    translator = Translator()
-    english_text = translator.translate(german_text, src='de', dest='en').text
-    return english_text
-
-def create_english_pdf(pdf_path, english_text):
-    pdf_document = fitz.open()
-    pdf_document.insert_pdf(fitz.open(pdf_path))
-
-    # Replace the German text with the translated English text
-    for page_num in range(pdf_document.page_count):
-        page = pdf_document.load_page(page_num)
-        page_text = page.get_text()
-        english_page_text = english_text.split('\f')[page_num]  # Split pages based on form feed (page separator)
-        page_text = page_text.replace(page_text, english_page_text)
-        page.update_text(page_text)
-
-    pdf_document.save("translated_pdf.pdf")
-    pdf_document.close()
-
-def main():
-    pdf_path = "path/to/your/pdf_file.pdf"
-    german_text = extract_text_from_pdf(pdf_path)
-    english_text = translate_german_to_english(german_text)
-    create_english_pdf(pdf_path, english_text)
-
-if __name__ == "__main__":
-    main()
-
-
-
-from PyPDF2 import PdfReader, PdfWriter
+from PyPDF2 import PdfReader, PdfWriter, PageObject
 from googletrans import Translator
 
 def extract_text_from_pdf(pdf_path):
@@ -65,8 +21,8 @@ def create_english_pdf(pdf_path, english_text):
     for page in pdf_reader.pages:
         pdf_writer.add_page(page)
 
-    translated_page = pdf_writer.add_blank_page()
-    translated_page.merge_page(PdfReader(english_text.encode('utf-8')).pages[0])
+    translated_page = PageObject.create_text_object(english_text)
+    pdf_writer.add_page(translated_page)
 
     with open("translated_pdf.pdf", "wb") as output_file:
         pdf_writer.write(output_file)
