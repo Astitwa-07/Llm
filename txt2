@@ -1,33 +1,36 @@
-def extract_text_from_pdf(pdf_path):
-    text = ""
-    with pdfplumber.open(pdf_path) as pdf:
-        for page in pdf.pages:
-            text += page.extract_text()
+import os
+import pdfplumber
+from googletrans import Translator
+import PyPDF2
 
-    return text
+def extract_text_from_pdf(pdf_path):
+    # Function remains the same as before
+
 def translate_text(text, target_lang='en'):
-    translator = Translator()
-    translated_text = translator.translate(text, dest=target_lang)
-    return translated_text.text
+    # Function remains the same as before
+
 def create_english_pdf(pdf_path, output_folder, english_text):
     file_name = os.path.basename(pdf_path)
     output_file_path = os.path.join(output_folder, "translated_" + file_name)
+
+    pdf_writer = PyPDF2.PdfWriter()
+
     with pdfplumber.open(pdf_path) as pdf:
         pdf_reader = PyPDF2.PdfReader(pdf_path)
-        pdf_writer = PyPDF2.PdfWriter()
 
-    for page_num in range(len(pdf.pages)):
-        page = pdf.pages[page_num]
-        pdf_writer.add_page(pdf_reader.getPage(page_num))
-        pdf_writer.update_page_form_fields(pdf_reader.getPage(page_num), {
-            "/Filter": "/FlateDecode"
-        })
-        pdf_writer.addBookmark("Translation", page_num)
-        page.extract_text = lambda: english_text.encode("latin1")
+        for page_num in range(len(pdf.pages)):
+            page = pdf.pages[page_num]
+            pdf_writer.add_page(pdf_reader.getPage(page_num))
+            pdf_writer.update_page_form_fields(pdf_reader.getPage(page_num), {
+                "/Filter": "/FlateDecode"
+            })
+            pdf_writer.addBookmark("Translation", page_num)
+            page.extract_text = lambda: english_text.encode("latin1")
 
     # Create a new PDF with the translated text
     with open(output_file_path, "wb") as output_file:
         pdf_writer.write(output_file)
+
 pdf_path = r'C:\Users\W1QDP7L\Downloads\11-Z-11-07343-013-800 We-Bu-PST-Verschleiss Bu-PL26_We-14971 (2).pdf'
 output_folder_path = r'C:\Users\W1QDP7L\Downloads\output'
 
@@ -35,26 +38,3 @@ german_text = extract_text_from_pdf(pdf_path)
 english_text = translate_text(german_text)
 
 create_english_pdf(pdf_path, output_folder_path, english_text)
-
-~\AppData\Roaming\Python\Python37\site-packages\pdfminer\pdfdocument.py in _getobj_parse(self, pos, objid)
-    816     def _getobj_parse(self, pos: int, objid: int) -> object:
-    817         assert self._parser is not None
---> 818         self._parser.seek(pos)
-    819         (_, objid1) = self._parser.nexttoken()  # objid
-    820         (_, genno) = self._parser.nexttoken()  # genno
-
-~\AppData\Roaming\Python\Python37\site-packages\pdfminer\psparser.py in seek(self, pos)
-    555 
-    556     def seek(self, pos: int) -> None:
---> 557         PSBaseParser.seek(self, pos)
-    558         self.reset()
-    559         return
-
-~\AppData\Roaming\Python\Python37\site-packages\pdfminer\psparser.py in seek(self, pos)
-    218         """Seeks the parser to the given position."""
-    219         log.debug("seek: %r", pos)
---> 220         self.fp.seek(pos)
-    221         # reset the status for nextline()
-    222         self.bufpos = pos
-
-ValueError: seek of closed file
