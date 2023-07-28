@@ -35,3 +35,26 @@ german_text = extract_text_from_pdf(pdf_path)
 english_text = translate_text(german_text)
 
 create_english_pdf(pdf_path, output_folder_path, english_text)
+
+~\AppData\Roaming\Python\Python37\site-packages\pdfminer\pdfdocument.py in _getobj_parse(self, pos, objid)
+    816     def _getobj_parse(self, pos: int, objid: int) -> object:
+    817         assert self._parser is not None
+--> 818         self._parser.seek(pos)
+    819         (_, objid1) = self._parser.nexttoken()  # objid
+    820         (_, genno) = self._parser.nexttoken()  # genno
+
+~\AppData\Roaming\Python\Python37\site-packages\pdfminer\psparser.py in seek(self, pos)
+    555 
+    556     def seek(self, pos: int) -> None:
+--> 557         PSBaseParser.seek(self, pos)
+    558         self.reset()
+    559         return
+
+~\AppData\Roaming\Python\Python37\site-packages\pdfminer\psparser.py in seek(self, pos)
+    218         """Seeks the parser to the given position."""
+    219         log.debug("seek: %r", pos)
+--> 220         self.fp.seek(pos)
+    221         # reset the status for nextline()
+    222         self.bufpos = pos
+
+ValueError: seek of closed file
