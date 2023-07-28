@@ -44,4 +44,49 @@ Here's a basic outline of how you can approach this task:
    print(english_text)
    ```
 
-Keep in mind that the translation quality may vary depending on the complexity of the text and the language pair. Additionally, the Google Translate API may have usage limits and may require an API key. If you have a large number of PDFs to translate, you might need to implement pagination and handle API rate limits accordingly.
+Keep in mind that the translation 
+
+
+		quality may vary depending on the complexity of the text and the language pair. Additionally, the Google Translate API may have usage limits and may require an API key. If you have a large number of PDFs to translate, you might need to implement pagination and handle API rate limits accordingly.
+
+
+
+
+import PyPDF2
+from googletrans import Translator
+
+def extract_text_from_pdf(pdf_path):
+    text = ""
+    with open(pdf_path, "rb") as file:
+        pdf_reader = PyPDF2.PdfFileReader(file)
+        for page_num in range(pdf_reader.numPages):
+            page = pdf_reader.getPage(page_num)
+            text += page.extract_text()
+
+    return text
+
+def translate_german_to_english(german_text):
+    translator = Translator()
+    english_text = translator.translate(german_text, src='de', dest='en').text
+    return english_text
+
+def create_english_pdf(pdf_path, english_text):
+    with open(pdf_path, "rb") as file:
+        pdf_reader = PyPDF2.PdfFileReader(file)
+        pdf_writer = PyPDF2.PdfFileWriter()
+
+        for page_num in range(pdf_reader.numPages):
+            page = pdf_reader.getPage(page_num)
+            pdf_writer.addPage(page)
+
+        with open("translated_pdf.pdf", "wb") as output_file:
+            pdf_writer.write(output_file)
+
+def main():
+    pdf_path = "path/to/your/pdf_file.pdf"
+    german_text = extract_text_from_pdf(pdf_path)
+    english_text = translate_german_to_english(german_text)
+    create_english_pdf(pdf_path, english_text)
+
+if __name__ == "__main__":
+    main()
