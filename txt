@@ -1,45 +1,3 @@
-import PyPDF2
-from googletrans import Translator
-
-def extract_text_from_pdf(pdf_path):
-    text = ""
-    with open(pdf_path, "rb") as file:
-        pdf_reader = PyPDF2.PdfFileReader(file)
-        for page_num in range(pdf_reader.numPages):
-            page = pdf_reader.getPage(page_num)
-            text += page.extract_text()
-
-    return text
-
-def translate_german_to_english(german_text):
-    translator = Translator()
-    english_text = translator.translate(german_text, src='de', dest='en').text
-    return english_text
-
-def create_english_pdf(pdf_path, english_text):
-    pdf_writer = PyPDF2.PdfWriter()
-
-    with open(pdf_path, "rb") as file:
-        pdf_reader = PyPDF2.PdfFileReader(file)
-        for page_num in range(pdf_reader.numPages):
-            page = pdf_reader.getPage(page_num)
-            pdf_writer.add_page(page)
-
-    with open("translated_pdf.pdf", "wb") as output_file:
-        pdf_writer.write(output_file)
-
-def main():
-    pdf_path = "path/to/your/pdf_file.pdf"
-    german_text = extract_text_from_pdf(pdf_path)
-    english_text = translate_german_to_english(german_text)
-    create_english_pdf(pdf_path, english_text)
-
-if __name__ == "__main__":
-    main()
-
-
-
-
 import fitz  # PyMuPDF
 from googletrans import Translator
 
@@ -47,7 +5,7 @@ def extract_text_from_pdf(pdf_path):
     text = ""
     pdf_document = fitz.open(pdf_path)
     for page_num in range(pdf_document.page_count):
-        page = pdf_document[page_num]
+        page = pdf_document.load_page(page_num)
         text += page.get_text()
 
     pdf_document.close()
@@ -59,15 +17,18 @@ def translate_german_to_english(german_text):
     return english_text
 
 def create_english_pdf(pdf_path, english_text):
-    pdf_document = fitz.open(pdf_path)
-    pdf_writer = fitz.open()
+    pdf_document = fitz.open()
+    pdf_document.insert_pdf(fitz.open(pdf_path))
 
+    # Replace the German text with the translated English text
     for page_num in range(pdf_document.page_count):
-        page = pdf_document[page_num]
-        pdf_writer.insert_pdf(page)
+        page = pdf_document.load_page(page_num)
+        page_text = page.get_text()
+        english_page_text = english_text.split('\f')[page_num]  # Split pages based on form feed (page separator)
+        page_text = page_text.replace(page_text, english_page_text)
+        page.update_text(page_text)
 
-    pdf_writer.save("translated_pdf.pdf")
-    pdf_writer.close()
+    pdf_document.save("translated_pdf.pdf")
     pdf_document.close()
 
 def main():
@@ -78,4 +39,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
