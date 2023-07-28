@@ -49,3 +49,35 @@ german_text = extract_text_from_pdf(pdf_path)
 english_text = translate_text(german_text)
 
 print(english_text)
+
+
+
+
+
+import pdfplumber
+from googletrans import Translator
+from reportlab.lib.pagesizes import letter
+from reportlab.platypus import SimpleDocTemplate, Paragraph
+from reportlab.lib.styles import getSampleStyleSheet
+
+def extract_text_from_pdf(pdf_path):
+    # Function remains the same as before
+
+def translate_text(text, target_lang='en'):
+    # Function remains the same as before
+
+# Replace 'path_to_pdf' with the actual path to your German PDF file.
+pdf_path = 'path_to_pdf'
+german_text = extract_text_from_pdf(pdf_path)
+english_text = translate_text(german_text)
+
+# Create a new PDF file to save the translated text
+output_file_path = 'translated_output.pdf'
+doc = SimpleDocTemplate(output_file_path, pagesize=letter)
+styles = getSampleStyleSheet()
+
+# Add the translated text as a paragraph to the PDF document
+translated_paragraph = Paragraph(english_text, styles["Normal"])
+doc.build([translated_paragraph])
+
+print("Translated text saved to:", output_file_path)
