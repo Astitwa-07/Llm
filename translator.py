@@ -27,3 +27,57 @@ english_text = translate_text(german_text)
 
 with open("C:\\Users\\W1QDP7L\\Documents\\New Text Document.txt", "w", encoding="utf-8") as f:
     print(english_text ,file=f)
+
+
+
+
+import PyPDF2
+import fitz  # PyMuPDF
+import tabula
+
+def extract_text_from_pdf(pdf_file):
+    text_content = ""
+    with open(pdf_file, 'rb') as file:
+        pdf_reader = PyPDF2.PdfFileReader(file)
+        num_pages = pdf_reader.numPages
+
+        for page_num in range(num_pages):
+            page = pdf_reader.getPage(page_num)
+            text_content += page.extractText()
+
+    return text_content
+
+def extract_images_from_pdf(pdf_file):
+    image_count = 0
+    doc = fitz.open(pdf_file)
+    for page_num in range(doc.page_count):
+        page = doc[page_num]
+        image_list = page.get_images(full=True)
+        for image_index, img in enumerate(image_list):
+            image_bytes = img[0]
+            image_format = img[1]
+            image_file = f'image_{image_count}.{image_format}'
+            with open(image_file, 'wb') as f:
+                f.write(image_bytes)
+            image_count += 1
+
+    doc.close()
+
+def extract_tables_from_pdf(pdf_file):
+    tables = tabula.read_pdf(pdf_file, pages='all')
+    table_data = "\n\n".join([table.to_string() for table in tables])
+    return table_data
+
+def save_to_text_file(content, output_file):
+    with open(output_file, 'w', encoding='utf-8') as f:
+        f.write(content)
+
+if __name__ == "__main__":
+    pdf_file = "your_pdf_file.pdf"
+    text_content = extract_text_from_pdf(pdf_file)
+    extract_images_from_pdf(pdf_file)
+    table_data = extract_tables_from_pdf(pdf_file)
+
+    output_file = "output.txt"
+    save_to_text_file(text_content + "\n\n" + table_data, output_file)
+    
